@@ -1,1 +1,4 @@
 tictactoe:
+
+clean:
+	rm tictactoe

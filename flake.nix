@@ -9,16 +9,27 @@
   outputs = { self, nixpkgs, ... }@inputs: inputs.utils.lib.eachSystem [
     "x86_64-linux" "i686-linux" "aarch64-linux" "x86_64-darwin"
   ] (system: let pkgs = import nixpkgs {
-                   inherit system;
-                 };
-             in {
-               devShell = pkgs.mkShell rec {
-                 name = "tictactoe";
-
-                 packages = with pkgs; [
-                   gnumake
-                   gcc
-                 ];
-               };
-             });
+        inherit system;
+      };
+      tictactoe = pkgs.stdenv.mkDerivation {
+        pname = "tictactoe";
+        version = "0.1.0";
+        src = ./.;
+        nativeBuildInputs = [
+          pkgs.gnumake
+          pkgs.gcc
+        ];
+        buildPhase = "make tictactoe";
+        installPhase = ''
+          mkdir -p $out/bin
+          mv tictactoe $out/bin
+        '';
+      };
+  in rec {
+    defaultApp = inputs.utils.lib.mkApp { drv = defaultPackage; };
+    defaultPackage = tictactoe;
+    devShell = pkgs.mkShell {
+      buildInputs = [ tictactoe ];
+    };
+  });
 }
